@@ -30,3 +30,19 @@ class Quadcopter2d:
         theta += omega * dt
         
         self.state = np.array([x, y, theta, vx, vy, omega])
+    def edges(self):
+        x, y, theta = self.state[0:3]
+        x1 = x - self.r * math.cos(theta)
+        y1 = y - self.r * math.sin(theta)
+        x2 = x + self.r * math.cos(theta)
+        y2 = y + self.r * math.sin(theta)
+
+        #Floating point precision causes +/- 1e-7 of error
+        #I simply cannot escape IEEE 754 
+        d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+        return ([x1,x2], [y1,y2])
+
+    def crash(self):
+        #ich bein un haskller
+        return(any(map(lambda x: x<0, sum(self.edges(), []))))

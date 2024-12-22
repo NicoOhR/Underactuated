@@ -24,7 +24,6 @@ class QuadAnimation:
         self.trail.set_data([], [])
         self.time_text.set_text('')
         self.quad = Quadcopter2d()
-        print("", self.quad.state)
 
     def init_animation(self):
         self.quadcopter_body.set_data([], [])
@@ -34,24 +33,17 @@ class QuadAnimation:
 
     def update(self, frame):
 
-        u1,u2 = self.quad.state[3:5]
+        (e1, e2) = self.quad.edges() 
+        self.quadcopter_body.set_data(e1, e2)
 
-        self.quad.update(u1, u2, self.dt)
-
-        x, y, theta, _, _, _ = self.quad.state
-
-        x1 = x - self.quad.r * math.cos(theta)
-        y1 = y - self.quad.r * math.sin(theta)
-        x2 = x + self.quad.r * math.cos(theta)
-        y2 = y + self.quad.r * math.sin(theta)
-        self.quadcopter_body.set_data([x1, x2], [y1, y2])
-
-        print("", self.quad.state)
-        self.trajectory_x.append(x)
-        self.trajectory_y.append(y)
+        self.trajectory_x.append(self.quad.state[0])
+        self.trajectory_y.append(self.quad.state[1])
         self.trail.set_data(self.trajectory_x, self.trajectory_y)
-
         self.time_text.set_text(self.time_template.format(frame * self.dt))
+
+        u1,u2 = self.quad.state[3:5]
+        self.quad.update(u1, u2, self.dt)
+        self.quad.crash()
         return self.quadcopter_body, self.trail, self.time_text
 
     def run(self):
