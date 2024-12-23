@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 import math
 
 
-class QuadAnimation:
+class QuadRender:
 
     def __init__(self):
         self.dt = 0.05
@@ -60,5 +60,5 @@ class QuadAnimation:
 
 
 if __name__ == "__main__":
-    quad_anim = QuadAnimation()
+    quad_anim = QuadRender()
     quad_anim.run()
