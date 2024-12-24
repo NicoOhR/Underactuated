@@ -6,7 +6,7 @@ import math
 
 class QuadRender:
 
-    def __init__(self):
+    def __init__(self, quad: Quadcopter2d):
         self.dt = 0.05
 
         self.fig, self.ax = plt.subplots()
@@ -23,7 +23,7 @@ class QuadRender:
         self.quadcopter_body.set_data([], [])
         self.trail.set_data([], [])
         self.time_text.set_text("")
-        self.quad = Quadcopter2d()
+        self.quad = quad
 
     def init_animation(self):
         self.quadcopter_body.set_data([], [])
@@ -60,5 +60,6 @@ class QuadRender:
 
 
 if __name__ == "__main__":
-    quad_anim = QuadRender()
+    quad = Quadcopter2d()
+    quad_anim = QuadRender(quad)
     quad_anim.run()

@@ -8,11 +8,12 @@ from pynput.keyboard import Controller
 
 
 class Quadcopter2d:
-    def __init__(self, mass=5, r=5):
+    def __init__(self, mass=5, r=5, x=10, y=10, hid: bool = False):
         self.mass = mass
         self.r = r
         self.mI = ((r * 2) ** 2) * mass * 1 / 12
-        self.state = np.array([10, 10, 0, 0, 0, 0])  # [x, y, theta, u1, u2, omega]
+        self.state = np.array([x, y, 0, 0, 0, 0])  # [x, y, theta, u1, u2, omega]
+        self.hid = hid
         self.keyboard = Controller()
 
     def dynamics(self, u1, u2, theta):
@@ -57,12 +58,13 @@ class Quadcopter2d:
         self.state[4] = max(self.state[4] + 3, u2) if self.state[4] - u2 >= 3 else u2
 
     def on_press(self, key):
-        if key.char == "u":
-            print("left")
-            self.input(self.state[3] + 3, self.state[4])
-        if key.char == "i":
-            print("right")
-            self.input(self.state[3], self.state[4] + 3)
+        if self.hid is True:
+            if key.char == "u":
+                print("left")
+                self.input(self.state[3] + 3, self.state[4])
+            if key.char == "i":
+                print("right")
+                self.input(self.state[3], self.state[4] + 3)
 
     def human_input(self):
         listener = keyboard.Listener(on_press=self.on_press)
