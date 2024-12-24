@@ -60,6 +60,6 @@ class QuadRender:
 
 
 if __name__ == "__main__":
-    quad = Quadcopter2d()
+    quad = Quadcopter2d(hid=True)
     quad_anim = QuadRender(quad)
     quad_anim.run()
