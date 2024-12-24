@@ -17,24 +17,43 @@ class Quadcopter2d:
         NEITHER = 4
 
     def __init__(self, mass=5, r=5, x=10, y=10, prop_strength=6, hid: bool = False):
+        # state required for physics and renderer
+        # [x, y, theta, u1, u2, omega]
+        self.physics_state = np.array([x, y, 0, 0, 0, 0])
         self.prop_strength = prop_strength
         self.mass = mass
         self.r = r
         self.mI = ((r * 2) ** 2) * mass * 1 / 12
-        self.state = np.array([x, y, 0, 0, 0, 0])  # [x, y, theta, u1, u2, omega]
+        self.time_alive = 0
         self.hid = hid
         self.keyboard = Controller()
         self.current_input = self.Input.NEITHER
+        self.current_action = np.array(
+            [self.Input.LEFT, self.Input.RIGHT, self.Input.BOTH, self.Input.NEITHER]
+        )
+
+        # state passed to agent for training
+        # [u1, u2, acc_x, acc_y, acc_ang, time]
+        self.agent_state = np.array([0, 0, 0, 0, 0, 0])
+
+    def reset(self, x=10, y=10):
+        self.physics_state = np.array([x, y, 0, 0, 0, 0])
+
+    def get_agent_state(self):
+        # ich bein und Javaer
+        return self.agent_state
 
     def dynamics(self, u1, u2, theta):
         acc_x = -(u1 + u2) * math.sin(theta) * 1 / self.mass
         acc_y = (u1 + u2) * math.cos(theta) * 1 / self.mass - scipy.constants.g
         acc_ang = self.r * (u1 - u2) * 1 / self.mI
+        time = self.agent_state[-1]
+        self.agent_state = np.array([u1, u2, acc_x, acc_y, acc_ang, time + 1])
         return (acc_x, acc_y, acc_ang)
 
     def update(self, u1, u2, dt):
         self.input()
-        x, y, theta, vx, vy, omega = self.state
+        x, y, theta, vx, vy, omega = self.physics_state
         acc = self.dynamics(u1, u2, theta)
 
         vx += acc[0] * dt
@@ -45,10 +64,10 @@ class Quadcopter2d:
         y += vy * dt
         theta += omega * dt
 
-        self.state = np.array([x, y, theta, vx, vy, omega])
+        self.physics_state = np.array([x, y, theta, vx, vy, omega])
 
     def edges(self):
-        x, y, theta = self.state[0:3]
+        x, y, theta = self.physics_state[0:3]
         x1 = x - self.r * math.cos(theta)
         y1 = y - self.r * math.sin(theta)
         x2 = x + self.r * math.cos(theta)
@@ -67,14 +86,17 @@ class Quadcopter2d:
     def input(self):
         match self.current_input:
             case self.Input.LEFT:
-                self.state[3] += self.prop_strength
+                self.physics_state[3] += self.prop_strength
             case self.Input.RIGHT:
-                self.state[4] += self.prop_strength
+                self.physics_state[4] += self.prop_strength
             case self.Input.BOTH:
-                self.state[3] += self.prop_strength
-                self.state[4] += self.prop_strength
+                self.physics_state[3] += self.prop_strength
+                self.physics_state[4] += self.prop_strength
             case self.Input.NEITHER:
                 pass
+
+    def set_input(self, instruction):
+        self.current_input = instruction
 
     def on_press(self, key):
         if self.hid is True:
