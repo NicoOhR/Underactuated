@@ -31,7 +31,7 @@ class Quadcopter2d:
         self.current_action = np.array(
             [self.Input.LEFT, self.Input.RIGHT, self.Input.BOTH, self.Input.NEITHER]
         )
-
+        self.dt = 0.05
         # state passed to agent for training
         # [u1, u2, acc_x, acc_y, acc_ang, time]
         self.agent_state = np.array([0, 0, 0, 0, 0, 0])
@@ -51,19 +51,19 @@ class Quadcopter2d:
         self.agent_state = np.array([u1, u2, acc_x, acc_y, acc_ang, time + 1])
         return (acc_x, acc_y, acc_ang)
 
-    def update(self, u1, u2, dt):
+    def update(self):
         self.input()
         x, y, theta, vx, vy, omega = self.physics_state
-        acc = self.dynamics(u1, u2, theta)
+        acc = self.dynamics(vx, vy, theta)
 
-        vx += acc[0] * dt
-        vy += acc[1] * dt
-        omega += acc[2] * dt
+        vx += acc[0] * self.dt
+        vy += acc[1] * self.dt
+        omega += acc[2] * self.dt
 
-        x += vx * dt
-        y += vy * dt
-        theta += omega * dt
-
+        x += vx * self.dt
+        y += vy * self.dt
+        theta += omega * self.dt
+        print(np.array([x, y, theta, vx, vy, omega]))
         self.physics_state = np.array([x, y, theta, vx, vy, omega])
 
     def edges(self):

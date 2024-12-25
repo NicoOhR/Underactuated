@@ -3,63 +3,55 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import math
 
+import matplotlib.pyplot as plt
+import time
+
 
 class QuadRender:
+    def __init__(self, quad):
+        self.dt = 0.0001
+        self.quad = quad
+        self.initialize_plot()
 
-    def __init__(self, quad: Quadcopter2d):
-        self.dt = 0.05
-
+    def initialize_plot(self):
+        plt.ion()
         self.fig, self.ax = plt.subplots()
-
         (self.quadcopter_body,) = self.ax.plot([], [], "o-", lw=2, label="Quadcopter")
         (self.trail,) = self.ax.plot([], [], "r--", lw=1, label="Trail")
-        self.time_template = "Time: {:.1f}s"
         self.time_text = self.ax.text(0.02, 0.95, "", transform=self.ax.transAxes)
         self.ax.set_xlim(-50, 50)
         self.ax.set_ylim(0, 100)
-
         self.trajectory_x = []
         self.trajectory_y = []
         self.quadcopter_body.set_data([], [])
         self.trail.set_data([], [])
         self.time_text.set_text("")
-        self.quad = quad
 
-    def init_animation(self):
-        self.quadcopter_body.set_data([], [])
-        self.trail.set_data([], [])
-        self.time_text.set_text("")
-        return self.quadcopter_body, self.trail, self.time_text
-
-    def update(self, frame):
-
-        (e1, e2) = self.quad.edges()
+    def render(self, frame):
+        edges = self.quad.edges()
+        state = self.quad.physics_state
+        e1, e2 = edges
         self.quadcopter_body.set_data(e1, e2)
-
-        self.trajectory_x.append(self.quad.state[0])
-        self.trajectory_y.append(self.quad.state[1])
+        self.trajectory_x.append(state[0])
+        self.trajectory_y.append(state[1])
         self.trail.set_data(self.trajectory_x, self.trajectory_y)
-        self.time_text.set_text(self.time_template.format(frame * self.dt))
-        u1, u2 = self.quad.state[3:5]
-        self.quad.update(u1, u2, self.dt)
-        self.quad.crash()
-        return self.quadcopter_body, self.trail, self.time_text
-
-    def run(self):
-        self.quad.human_input()
-        ani = animation.FuncAnimation(
-            self.fig,
-            self.update,
-            frames=500,
-            init_func=self.init_animation,
-            blit=True,
-            interval=self.dt * 1000,
-        )
-        plt.show()
-        plt.close(self.fig)
+        self.time_text.set_text(f"Time: {frame * self.dt:.1f}s")
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
 
 if __name__ == "__main__":
     quad = Quadcopter2d(hid=True)
     quad_anim = QuadRender(quad)
-    quad_anim.run()
+    frame = 0
+    try:
+        while True:
+            quad.update()
+            quad.human_input()
+            quad_anim.render(frame)
+            frame += 1
+            time.sleep(quad_anim.dt)  # Control the update frequency
+    except KeyboardInterrupt:
+        print("Animation stopped.")
+        plt.ioff()
+        plt.show()

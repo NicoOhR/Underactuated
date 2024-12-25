@@ -6,7 +6,7 @@ from render import QuadRender
 
 
 class QuadEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, render_mode=None):
         super(QuadEnv, self).__init__()
         """
         action space:
@@ -26,6 +26,7 @@ class QuadEnv(gym.Env):
         )
         self.quad = Quadcopter2d()
         self.renderer = QuadRender(self.quad)
+        self.render_mode = render_mode
 
     def reset(self, **kwargs):
         super().reset(**kwargs)
@@ -38,7 +39,21 @@ class QuadEnv(gym.Env):
         return [u1, u2, acc_x, acc_y, acc_ang], reward
 
     def step(self, action):
-        obs, reward = self._get_obs_info()
         direction = self.quad.current_action[action]
+        self.quad.set_input(direction)
+        self.quad.update()
+        obs, reward = self._get_obs_info()
         terminated = self.quad.crash()
         return obs, reward, terminated, False, reward
+
+    def render(self):
+        if self.render_mode:
+            self.renderer.run()
+
+
+if __name__ == "__main__":
+    test_env = QuadEnv(render_mode=True)
+    test_env.reset()
+    test_env.render()
+    while True:
+        test_env.step(action=0)
