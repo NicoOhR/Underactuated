@@ -1,12 +1,15 @@
 from typing import Optional
+import time
 import numpy as np
 import gymnasium as gym
 from quadcopter import Quadcopter2d
 from render import QuadRender
+import matplotlib.pyplot as plt
 
 
 class QuadEnv(gym.Env):
     def __init__(self, render_mode=None):
+        metadata = {"render_modes": ["human"], "render_fps": 5}
         super(QuadEnv, self).__init__()
         """
         action space:
@@ -47,13 +50,22 @@ class QuadEnv(gym.Env):
         return obs, reward, terminated, False, reward
 
     def render(self):
-        if self.render_mode:
-            self.renderer.run()
+        if self.render_mode == "human":
+            frame = int(self.quad.time_alive / self.renderer.dt)
+            self.renderer.render(frame)
+            time.sleep(self.renderer.dt)
+
+    def close(self):
+        if self.renderer:
+            plt.close(self.renderer.fig)
 
 
 if __name__ == "__main__":
-    test_env = QuadEnv(render_mode=True)
-    test_env.reset()
-    test_env.render()
-    while True:
-        test_env.step(action=0)
+    test_env = QuadEnv(render_mode="human")
+    obs, info = test_env.reset()
+    done = False
+    while not done:
+        obs, reward, terminated, truncated, info = test_env.step(action=3)
+        test_env.render()
+        done = terminated or truncated
+    test_env.close()
