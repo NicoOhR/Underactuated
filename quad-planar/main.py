@@ -40,7 +40,7 @@ def main():
             done = False
             while not done:
                 action = agent.sample_action(obs)
-                obs, reward, terminated, truncated, info = wrapped.step(action)
+                obs, reward, terminated, truncated, info = wrapped.step(int(action))
                 agent.rewards.append(reward)
                 done = terminated or truncated
 
@@ -59,7 +59,7 @@ def main():
 
         df1 = pd.DataFrame(rewards_to_plot).melt()
         df1.rename(columns={"variable": "episodes", "value": "reward"}, inplace=True)
-        sns.set(style="darkgrid", context="talk", palette="rainbow")
+        sns.set_theme(style="darkgrid", context="talk", palette="rainbow")
         sns.lineplot(x="episodes", y="reward", data=df1).set(
             title="REINFORCE for InvertedPendulum-v4"
         )

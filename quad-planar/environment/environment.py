@@ -32,21 +32,24 @@ class QuadEnv(gym.Env):
 
     def reset(self, **kwargs):
         super().reset(**kwargs)
+        state, reward = self._get_obs_info()
+        info = {"reward": reward}
         self.quad.reset()
-        return self._get_obs_info()
+        return (np.array(state), info)
 
     def _get_obs_info(self):
         u1, u2, acc_x, acc_y, acc_ang, time = self.quad.get_agent_state()
         reward = -1 * (acc_x + acc_y + acc_ang) / 3 + (time / 10)
-        return [u1, u2, acc_x, acc_y, acc_ang], reward
+        return ([u1, u2, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
         direction = self.quad.current_action[action]
         self.quad.set_input(direction)
         self.quad.update()
         obs, reward = self._get_obs_info()
+        info = {"reward": reward}
         terminated = self.quad.crash()
-        return obs, reward, terminated, False, reward
+        return np.array(obs), reward, terminated, False, info
 
     def render(self):
         if self.render_mode == "human":
