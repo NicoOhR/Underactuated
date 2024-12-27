@@ -27,8 +27,9 @@ class QuadEnv(gym.Env):
             dtype=np.float32,
         )
         self.quad = Quadcopter2d()
-        self.renderer = QuadRender(self.quad)
         self.render_mode = render_mode
+        if render_mode == "human":
+            self._init_render()
 
     def reset(self, **kwargs):
         super().reset(**kwargs)
@@ -50,16 +51,14 @@ class QuadEnv(gym.Env):
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
-        return np.array(obs), reward, terminated, False, info
-
-    def _init_render(self):
-        import matplotlib.pyplot as plt
-
-    def render(self):
         if self.render_mode == "human":
             frame = int(self.quad.time_alive / self.renderer.dt)
             self.renderer.render(frame)
             time.sleep(self.renderer.dt)
+        return np.array(obs), reward, terminated, False, info
+
+    def _init_render(self):
+        self.renderer = QuadRender(self.quad)
 
     def close(self):
         if self.renderer:
