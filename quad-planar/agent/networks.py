@@ -60,16 +60,16 @@ class REINFORCE:
         action = distrib.sample()
         prob = distrib.log_prob(action)
 
-        action = action.numpy()
+        action = action.item()
 
         self.probs.append(prob)
 
         return action
-    
+
     def update(self):
         running_g = 0
         gs = []
-        
+
         for R in self.rewards[::-1]:
             running_g = R + self.gamma * running_g
             gs.insert(0, running_g)
@@ -86,5 +86,3 @@ class REINFORCE:
 
             self.probs = []
             self.rewards = []
-
-
