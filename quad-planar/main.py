@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    env = gym.make("QuadEnv-v0")
+    env = gym.make("QuadEnv-v0", render_mode="human")
     print("made env")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
     total_episodes = int(5e3)
@@ -51,12 +51,9 @@ def main():
                 avg_reward = int(np.mean(wrapped.return_queue))
                 print("Episode:", episode, "Avg:", avg_reward)
 
-        reward_over_seeds.append(reward_over_episodes)
+            reward_over_seeds.append(reward_over_episodes)
 
-        rewards_to_plot = [
-            [reward[0] for reward in rewards] for rewards in reward_over_seeds
-        ]
-
+        rewards_to_plot = reward_over_seeds
         df1 = pd.DataFrame(rewards_to_plot).melt()
         df1.rename(columns={"variable": "episodes", "value": "reward"}, inplace=True)
         sns.set_theme(style="darkgrid", context="talk", palette="rainbow")

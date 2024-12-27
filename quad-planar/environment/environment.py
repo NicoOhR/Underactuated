@@ -22,7 +22,7 @@ class QuadEnv(gym.Env):
              * R^5: [0.0,0.0, unbounded, unbounded, unbounded] [50, 50, unbounded, unbounded, unbounded]
         """
         self.observation_space = gym.spaces.Box(
-            low=np.array([0.0, 0.0, np.inf, np.inf, np.inf]),
+            low=np.array([0.0, 0.0, -np.inf, -np.inf, -np.inf]),
             high=np.array([50.0, 50.0, np.inf, np.inf, np.inf]),
             dtype=np.float32,
         )
@@ -43,14 +43,17 @@ class QuadEnv(gym.Env):
         return ([u1, u2, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
-        print(action)
-        direction = self.quad.current_action[action - 1]
+        # print(action)
+        direction = self.quad.current_action[action]
         self.quad.set_input(direction)
         self.quad.update()
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
         return np.array(obs), reward, terminated, False, info
+
+    def _init_render(self):
+        import matplotlib.pyplot as plt
 
     def render(self):
         if self.render_mode == "human":

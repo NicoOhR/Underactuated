@@ -63,7 +63,7 @@ class Quadcopter2d:
         x += vx * self.dt
         y += vy * self.dt
         theta += omega * self.dt
-        print(np.array([x, y, theta, vx, vy, omega]))
+        # print(np.array([x, y, theta, vx, vy, omega]))
         self.physics_state = np.array([x, y, theta, vx, vy, omega])
 
     def edges(self):
@@ -108,7 +108,7 @@ class Quadcopter2d:
                 self.current_input = self.Input.RIGHT
             else:
                 self.current_input = self.Input.NEITHER
-            print(self.current_input)
+            # print(self.current_input)
 
     def human_input(self):
         listener = keyboard.Listener(on_press=self.on_press)

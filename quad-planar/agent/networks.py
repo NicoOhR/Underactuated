@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch.distributions.normal import Normal
+from torch.distributions.categorical import Categorical
 
 import gymnasium as gym
 
@@ -18,28 +18,17 @@ class Policy_Network(nn.Module):
         hidden_layer1 = 16
         hidden_layer2 = 32
 
-        self.shared_network = nn.Sequential(
+        self.policy = nn.Sequential(
             nn.Linear(obs_space_dims, hidden_layer1),
             nn.ReLU(),
             nn.Linear(hidden_layer1, hidden_layer2),
             nn.ReLU(),
+            nn.Linear(hidden_layer2, action_space_dims),
+            nn.Softmax(dim=-1),
         )
 
-        self.policy_mean_network = nn.Sequential(
-            nn.Linear(hidden_layer2, action_space_dims)
-        )
-
-        self.policy_stddev_net = nn.Sequential(
-            nn.Linear(hidden_layer2, action_space_dims)
-        )
-
-    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        shared_features = self.shared_network(x.float())
-        action_means = self.policy_mean_network(shared_features)
-        action_stddevs = torch.log(
-            1 + torch.exp(self.policy_stddev_net(shared_features))
-        )
-        return action_means, action_stddevs
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.policy(x.float())
 
 
 class REINFORCE:
@@ -54,11 +43,10 @@ class REINFORCE:
 
     def sample_action(self, state: np.ndarray) -> float:
         tstate = torch.from_numpy(state)
-        action_means, action_stddevs = self.net(tstate)
-
-        distrib = Normal(action_means[0] + self.eps, action_stddevs[0] + self.eps)
-        action = distrib.sample()
-        prob = distrib.log_prob(action)
+        actions_probabilities = self.net(tstate)
+        dist = Categorical(actions_probabilities)
+        action = dist.sample()
+        prob = dist.log_prob(action)
 
         action = action.item()
 
