@@ -74,15 +74,15 @@ class REINFORCE:
             running_g = R + self.gamma * running_g
             gs.insert(0, running_g)
 
-            deltas = torch.stack(self.probs)
-            log_probs = torch.stack(self.probs)
-            log_prob_mean = log_probs.mean()
+        deltas = torch.tensor(gs)
+        log_probs = torch.stack(self.probs)
+        log_prob_mean = log_probs.mean()
 
-            loss = -torch.sum(log_prob_mean * deltas)
+        loss = -torch.sum(log_prob_mean * deltas)
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
-            self.probs = []
-            self.rewards = []
+        self.probs = []
+        self.rewards = []

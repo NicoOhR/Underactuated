@@ -43,7 +43,8 @@ class QuadEnv(gym.Env):
         return ([u1, u2, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
-        direction = self.quad.current_action[action]
+        print(action)
+        direction = self.quad.current_action[action - 1]
         self.quad.set_input(direction)
         self.quad.update()
         obs, reward = self._get_obs_info()
