@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class QuadEnv(gym.Env):
     def __init__(self, render_mode=None):
-        metadata = {"render_modes": ["human"], "render_fps": 5}
+        metadata = {"render_modes": ["human"]}
         super(QuadEnv, self).__init__()
         """
         action space:
@@ -17,8 +17,7 @@ class QuadEnv(gym.Env):
         """
         self._action_space = gym.spaces.Discrete(4)
         """
-         observation: 
-             * Encoders: u1/u2
+         observation: * Encoders: u1/u2
              * IMU: acc_x, acc_y, omega
              * R^5: [0.0,0.0, unbounded, unbounded, unbounded] [50, 50, unbounded, unbounded, unbounded]
         """

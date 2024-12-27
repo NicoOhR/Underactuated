@@ -50,7 +50,7 @@ if __name__ == "__main__":
             quad.human_input()
             quad_anim.render(frame)
             frame += 1
-            time.sleep(quad_anim.dt)  # Control the update frequency
+            time.sleep(quad_anim.dt)
     except KeyboardInterrupt:
         print("Animation stopped.")
         plt.ioff()
