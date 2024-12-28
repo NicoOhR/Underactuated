@@ -1,6 +1,7 @@
 from agent.networks import REINFORCE
 from environment.environment import QuadEnv
 from environment.quadcopter import Quadcopter2d
+from setproctitle import setproctitle
 import gymnasium as gym
 import torch
 import seaborn as sns
@@ -63,4 +64,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    setproctitle("training_process")
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(-1)
