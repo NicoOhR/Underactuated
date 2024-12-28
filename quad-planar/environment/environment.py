@@ -22,9 +22,9 @@ class QuadEnv(gym.Env):
              * R^5: [0.0,0.0, unbounded, unbounded, unbounded] [50, 50, unbounded, unbounded, unbounded]
         """
         self.observation_space = gym.spaces.Box(
-            low=np.array([0.0, 0.0, -np.inf, -np.inf, -np.inf]),
-            high=np.array([50.0, 50.0, np.inf, np.inf, np.inf]),
-            dtype=np.float32,
+            low=np.array([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf]),
+            high=np.array([np.inf, np.inf, np.inf, np.inf, np.inf]),
+            dtype=np.float64,
         )
         self.quad = Quadcopter2d()
         self.render_mode = render_mode
@@ -36,11 +36,11 @@ class QuadEnv(gym.Env):
         state, reward = self._get_obs_info()
         info = {"reward": reward}
         self.quad.reset()
-        return (np.array(state), info)
+        return (np.array(state, dtype=np.float64), info)
 
     def _get_obs_info(self):
-        u1, u2, acc_x, acc_y, acc_ang, time = self.quad.get_agent_state()
-        reward = -1 * (acc_x + acc_y + acc_ang) / 3 + (time / 10)
+        u1, u2, acc_x, acc_y, acc_ang, _ = self.quad.get_agent_state()
+        reward = -1 * (acc_x + acc_y + acc_ang) / 3
         return ([u1, u2, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
