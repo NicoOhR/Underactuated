@@ -14,6 +14,7 @@ class Policy_Network(nn.Module):
     def __init__(self, obs_space_dims: int, action_space_dims: int):
 
         super().__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         hidden_layer1 = 16
         hidden_layer2 = 32
@@ -27,12 +28,18 @@ class Policy_Network(nn.Module):
             nn.Softmax(dim=-1),
         )
 
+        self.policy.to(self.device)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.policy(x.float())
+        return self.policy(x.float().to(self.device))
+
+    def save(self, fname):
+        torch.save(self.policy.state_dict(), fname)
 
 
 class REINFORCE:
     def __init__(self, obs_space_dims: int, action_space_dims: int):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.learning_rate = 1e-4
         self.gamma = 0.99
         self.eps = 1e-6
@@ -40,9 +47,10 @@ class REINFORCE:
         self.rewards = []
         self.net = Policy_Network(obs_space_dims, action_space_dims)
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=self.learning_rate)
+        self.net.to(self.device)
 
     def sample_action(self, state: np.ndarray) -> float:
-        tstate = torch.from_numpy(state)
+        tstate = torch.from_numpy(state).to(self.device)
         actions_probabilities = self.net(tstate)
         dist = Categorical(actions_probabilities)
         action = dist.sample()
@@ -62,7 +70,7 @@ class REINFORCE:
             running_g = R + self.gamma * running_g
             gs.insert(0, running_g)
 
-        deltas = torch.tensor(gs)
+        deltas = torch.tensor(gs).to(self.device)
         log_probs = torch.stack(self.probs)
         log_prob_mean = log_probs.mean()
 
@@ -74,3 +82,6 @@ class REINFORCE:
 
         self.probs = []
         self.rewards = []
+
+    def save(self, fname):
+        self.net.save(fname)

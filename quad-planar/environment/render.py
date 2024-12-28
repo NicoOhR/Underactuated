@@ -34,7 +34,7 @@ class QuadRender:
         self.quadcopter_body.set_data(e1, e2)
         self.trajectory_x.append(state[0])
         self.trajectory_y.append(state[1])
-        self.trail.set_data(self.trajectory_x, self.trajectory_y)
+        # self.trail.set_data(self.trajectory_x, self.trajectory_y)
         self.time_text.set_text(f"Time: {frame * self.dt:.1f}s")
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()

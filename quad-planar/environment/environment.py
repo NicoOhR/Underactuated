@@ -54,7 +54,7 @@ class QuadEnv(gym.Env):
         if self.render_mode == "human":
             frame = int(self.quad.time_alive / self.renderer.dt)
             self.renderer.render(frame)
-            time.sleep(self.renderer.dt)
+
         return np.array(obs), reward, terminated, False, info
 
     def _init_render(self):

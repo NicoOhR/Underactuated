@@ -4,6 +4,6 @@ from .quadcopter import Quadcopter2d
 register(
     id="QuadEnv-v0",
     entry_point="environment.environment:QuadEnv",
-    kwargs={"render_mode": "human"},
+    kwargs=None,
     max_episode_steps=100,
 )
