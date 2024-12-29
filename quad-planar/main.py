@@ -1,7 +1,7 @@
 from agent.networks import REINFORCE
 from tqdm import tqdm
-from environment.environment import QuadEnv
-from environment.quadcopter import Quadcopter2d
+from env.environment import QuadEnv
+from env.quadcopter import Quadcopter2d
 from setproctitle import setproctitle
 import gymnasium as gym
 import torch
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 def main():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
-    total_episodes = int(1e5)
+    total_episodes = int(0.5e5)
     if env.observation_space.shape:
         obs_space_dims = env.observation_space.shape[0]
     else:

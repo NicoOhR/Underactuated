@@ -1,8 +1,3 @@
-from .quadcopter import Quadcopter2d
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import math
-
 import matplotlib.pyplot as plt
 import time
 
@@ -41,13 +36,15 @@ class QuadRender:
 
 
 if __name__ == "__main__":
+    from quadcopter import Quadcopter2d
+
     quad = Quadcopter2d(hid=True)
     quad_anim = QuadRender(quad)
     frame = 0
+    quad.human_input()
     try:
         while True:
             quad.update()
-            quad.human_input()
             quad_anim.render(frame)
             frame += 1
             time.sleep(quad_anim.dt)
@@ -55,3 +52,5 @@ if __name__ == "__main__":
         print("Animation stopped.")
         plt.ioff()
         plt.show()
+else:
+    from env.quadcopter import Quadcopter2d

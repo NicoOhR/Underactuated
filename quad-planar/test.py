@@ -12,11 +12,12 @@ else:
 
 action_space_dims = 4
 model = REINFORCE(obs_space_dims, action_space_dims)
-model.net.load_state_dict(torch.load("trained/agent_episode_99000.pt"))
+model.net.load_state_dict(torch.load("trained/agent_episode_49000.pt"))
 
 done = False
 obs, info = env.reset()
 while not done:
     action = model.sample_action(obs)
+    print(action)
     obs, reward, terminated, truncated, info = env.step(int(action))
     done = terminated or truncated

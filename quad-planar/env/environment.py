@@ -1,11 +1,7 @@
-from typing import Optional
-import time
 import math
 import numpy as np
-import gymnasium as gym
-from .quadcopter import Quadcopter2d
-from .render import QuadRender
 import matplotlib.pyplot as plt
+import gymnasium as gym
 
 
 class QuadEnv(gym.Env):
@@ -51,6 +47,7 @@ class QuadEnv(gym.Env):
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
+
         if self.render_mode == "human":
             frame = int(self.quad.time_alive / self.renderer.dt)
             self.renderer.render(frame)
@@ -66,11 +63,23 @@ class QuadEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    test_env = QuadEnv(render_mode="human")
-    obs, info = test_env.reset()
-    done = False
-    while not done:
-        obs, reward, terminated, truncated, info = test_env.step(action=3)
-        test_env.render()
-        done = terminated or truncated
-    test_env.close()
+    from quadcopter import Quadcopter2d
+    from render import QuadRender
+
+    def main():
+        test_env = QuadEnv(render_mode="human")
+        obs, info = test_env.reset()
+        done = False
+        test_env.quad.human_input()
+        while not done:
+            obs, reward, terminated, truncated, info = test_env.step(action=3)
+            done = terminated or truncated
+        test_env.close()
+
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Program Interrupted")
+else:
+    from env.quadcopter import Quadcopter2d
+    from env.render import QuadRender
