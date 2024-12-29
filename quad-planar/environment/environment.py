@@ -1,5 +1,6 @@
 from typing import Optional
 import time
+import math
 import numpy as np
 import gymnasium as gym
 from .quadcopter import Quadcopter2d
@@ -40,11 +41,10 @@ class QuadEnv(gym.Env):
 
     def _get_obs_info(self):
         u1, u2, acc_x, acc_y, acc_ang, _ = self.quad.get_agent_state()
-        reward = -1 * (acc_x + acc_y + acc_ang) / 3
+        reward = -math.sqrt(acc_x**2 + acc_y**2 + acc_ang**2)
         return ([u1, u2, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
-        # print(action)
         direction = self.quad.current_action[action]
         self.quad.set_input(direction)
         self.quad.update()

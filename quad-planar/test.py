@@ -12,7 +12,7 @@ else:
 
 action_space_dims = 4
 model = REINFORCE(obs_space_dims, action_space_dims)
-model.net.load_state_dict(torch.load("trained/agent_episode_4000.pt"))
+model.net.load_state_dict(torch.load("trained/agent_episode_9000.pt"))
 
 done = False
 obs, info = env.reset()
