@@ -40,9 +40,9 @@ class QuadEnv(gym.Env):
         return (np.array(state, dtype=np.float64), info)
 
     def _get_obs_info(self):
-        u1, u2, acc_x, acc_y, acc_ang, _ = self.quad.get_agent_state()
-        reward = -math.sqrt(acc_x**2 + acc_y**2 + acc_ang**2)
-        return ([u1, u2, acc_x, acc_y, acc_ang], reward)
+        vx, vy, acc_x, acc_y, acc_ang, _ = self.quad.get_agent_state()
+        reward = -math.sqrt(acc_x**2 + acc_y**2 + acc_ang**2) - math.sqrt(vx**2 + vy**2)
+        return ([vx, vy, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
         direction = self.quad.current_action[action]

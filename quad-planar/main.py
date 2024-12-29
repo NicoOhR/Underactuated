@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 def main():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
-    total_episodes = int(1e4)
+    total_episodes = int(1e5)
     if env.observation_space.shape:
         obs_space_dims = env.observation_space.shape[0]
     else:

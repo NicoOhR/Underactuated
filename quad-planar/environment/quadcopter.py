@@ -33,7 +33,7 @@ class Quadcopter2d:
         )
         self.dt = 0.05
         # state passed to agent for training
-        # [u1, u2, acc_x, acc_y, acc_ang, time]
+        # [vx, vy, acc_x, acc_y, acc_ang, time]
         self.agent_state = np.array([0, 0, 0, 0, 0, 0])
 
     def reset(self, x=10, y=10):
@@ -47,8 +47,6 @@ class Quadcopter2d:
         acc_x = -(u1 + u2) * math.sin(theta) * 1 / self.mass
         acc_y = (u1 + u2) * math.cos(theta) * 1 / self.mass - scipy.constants.g
         acc_ang = self.r * (u1 - u2) * 1 / self.mI
-        time = self.agent_state[-1]
-        self.agent_state = np.array([u1, u2, acc_x, acc_y, acc_ang, time + 1])
         return (acc_x, acc_y, acc_ang)
 
     def update(self):
@@ -60,10 +58,13 @@ class Quadcopter2d:
         vy += acc[1] * self.dt
         omega += acc[2] * self.dt
 
+        time = self.agent_state[-1]
+
         x += vx * self.dt
         y += vy * self.dt
-        theta += omega * self.dt
-        # print(np.array([x, y, theta, vx, vy, omega]))
+        theta += math.radians(omega * self.dt)
+
+        self.agent_state = np.array([vx, vy, acc[0], acc[1], acc[2], time + 1])
         self.physics_state = np.array([x, y, theta, vx, vy, omega])
 
     def edges(self):
@@ -72,10 +73,6 @@ class Quadcopter2d:
         y1 = y - self.r * math.sin(theta)
         x2 = x + self.r * math.cos(theta)
         y2 = y + self.r * math.sin(theta)
-
-        # Floating point precision causes +/- 1e-7 of error
-        # I simply cannot escape IEEE 754
-        d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
         return ([x1, x2], [y1, y2])
 
