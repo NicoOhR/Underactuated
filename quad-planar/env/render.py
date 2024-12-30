@@ -14,8 +14,8 @@ class QuadRender:
         (self.quadcopter_body,) = self.ax.plot([], [], "o-", lw=2, label="Quadcopter")
         (self.trail,) = self.ax.plot([], [], "r--", lw=1, label="Trail")
         self.time_text = self.ax.text(0.02, 0.95, "", transform=self.ax.transAxes)
-        self.ax.set_xlim(-50, 200)
-        self.ax.set_ylim(0, 100)
+        self.ax.set_xlim(0, 20)
+        self.ax.set_ylim(-200, 20)
         self.trajectory_x = []
         self.trajectory_y = []
         self.quadcopter_body.set_data([], [])
@@ -24,7 +24,7 @@ class QuadRender:
 
     def render(self, frame):
         edges = self.quad.edges()
-        state = self.quad.physics_state
+        state = self.quad.y
         e1, e2 = edges
         self.quadcopter_body.set_data(e1, e2)
         self.trajectory_x.append(state[0])
@@ -36,12 +36,11 @@ class QuadRender:
 
 
 if __name__ == "__main__":
-    from quadcopter import Quadcopter2d
+    from quadcopter import Quad2d
 
-    quad = Quadcopter2d(hid=True)
+    quad = Quad2d()
     quad_anim = QuadRender(quad)
     frame = 0
-    quad.human_input()
     try:
         while True:
             quad.update()
@@ -53,4 +52,4 @@ if __name__ == "__main__":
         plt.ioff()
         plt.show()
 else:
-    from env.quadcopter import Quadcopter2d
+    from env.quadcopter import Quad2d
