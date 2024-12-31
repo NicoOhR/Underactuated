@@ -1,3 +1,4 @@
+from stable_baselines3.common import vec_env
 from agent.networks import REINFORCE
 from tqdm import tqdm
 from env.environment import QuadEnv
@@ -11,9 +12,11 @@ import numpy as np
 import random
 import sys
 import matplotlib.pyplot as plt
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_util import make_vec_env
 
 
-def main():
+def main_bak():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
     total_episodes = int(100)
@@ -61,6 +64,14 @@ def main():
     #     )
     #     plt.show()
     return 0
+
+
+def main():
+    env = gym.make("QuadEnv-v0")
+    model = PPO("MlpPolicy", env, verbose=1)
+    model.learn(total_timesteps=30000)
+    model.save("ppo_quad")
+    del model
 
 
 if __name__ == "__main__":

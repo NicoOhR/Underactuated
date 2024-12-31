@@ -12,7 +12,7 @@ class QuadEnv(gym.Env):
         metadata = {"render_modes": ["human"]}
         super(QuadEnv, self).__init__()
         self.action_space = gym.spaces.Box(
-            low=0.0, high=2.0, shape=(2,), dtype=np.float64
+            low=0.0, high=5.0, shape=(2,), dtype=np.float64
         )
         self.observation_space = gym.spaces.Box(
             low=np.array([-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf]),
@@ -37,9 +37,7 @@ class QuadEnv(gym.Env):
         return ([vx, vy, omega, acc_x, acc_y, alpha], reward)
 
     def step(self, action):
-        clipped = np.clip(action, 0.0, 2.0)
-        f1, f2 = clipped
-        print(f1, f2)
+        f1, f2 = action
         self.quad.set_input(f1, f2)
         self.quad.update()
         obs, reward = self._get_obs_info()
