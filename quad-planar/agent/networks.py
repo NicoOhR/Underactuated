@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch.distributions.categorical import Categorical
+from torch.distributions import MultivariateNormal
 
 import gymnasium as gym
 
@@ -24,14 +24,19 @@ class Policy_Network(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_layer1, hidden_layer2),
             nn.ReLU(),
-            nn.Linear(hidden_layer2, action_space_dims),
-            nn.Softmax(dim=-1),
         )
+
+        self.mean_layer = nn.Sequential(nn.Linear(hidden_layer2, action_space_dims))
+
+        self.stddev_layer = nn.Sequential(nn.Linear(hidden_layer2, action_space_dims))
 
         self.policy.to(self.device)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.policy(x.float().to(self.device))
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        shared = self.policy(x.float().to(self.device))
+        means = self.mean_layer(shared)
+        stddevs = torch.log(1 + torch.exp(self.stddev_layer(shared)))
+        return means, stddevs
 
 
 class REINFORCE:
@@ -46,18 +51,19 @@ class REINFORCE:
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=self.learning_rate)
         self.net.to(self.device)
 
-    def sample_action(self, state: np.ndarray) -> float:
+    def sample_action(self, state: np.ndarray):
         tstate = torch.from_numpy(state).to(self.device)
-        actions_probabilities = self.net(tstate)
-        dist = Categorical(actions_probabilities)
+        means, stddevs = self.net(tstate)
+        cov = torch.diag(stddevs**2)
+        dist = MultivariateNormal(means, cov)
         action = dist.sample()
         prob = dist.log_prob(action)
 
-        action = action.item()
+        f1, f2 = action.tolist()
 
         self.probs.append(prob)
 
-        return action
+        return [f1, f2]
 
     def update(self):
         running_g = 0

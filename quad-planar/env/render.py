@@ -50,6 +50,5 @@ if __name__ == "__main__":
             frame += 1
             time.sleep(quad_anim.dt)
     except KeyboardInterrupt:
-        print("Animation stopped.")
         plt.ioff()
         plt.show()

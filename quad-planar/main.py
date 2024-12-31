@@ -1,7 +1,7 @@
 from agent.networks import REINFORCE
 from tqdm import tqdm
 from env.environment import QuadEnv
-from env.quadcopter import Quadcopter2d
+from env.quadcopter import Quad2d
 from setproctitle import setproctitle
 import gymnasium as gym
 import torch
@@ -16,14 +16,15 @@ import matplotlib.pyplot as plt
 def main():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
-    total_episodes = int(0.5e5)
+    total_episodes = int(100)
     if env.observation_space.shape:
         obs_space_dims = env.observation_space.shape[0]
     else:
-        print("failed to get observation dimensions")
         return -1
-
-    action_space_dims = 4
+    if env.action_space.shape:
+        action_space_dims = env.action_space.shape[0]
+    else:
+        return -1
 
     reward_over_seeds = []
 
@@ -39,7 +40,7 @@ def main():
             done = False
             while not done:
                 action = agent.sample_action(obs)
-                obs, reward, terminated, truncated, info = wrapped.step(int(action))
+                obs, reward, terminated, truncated, info = wrapped.step(action)
                 agent.rewards.append(reward)
                 done = terminated or truncated
 
@@ -47,7 +48,6 @@ def main():
             agent.update()
             if episode % 1000 == 0:
                 avg_reward = int(np.mean(wrapped.return_queue))
-                print("Episode:", episode, "Avg:", avg_reward)
                 agent.save(f"trained/agent_episode_{episode}.pt")
 
             reward_over_seeds.append(reward_over_episodes)
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Program Interrupted")
+        print("exiting application")

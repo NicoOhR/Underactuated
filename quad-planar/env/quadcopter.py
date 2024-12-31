@@ -18,7 +18,7 @@ class Quad2d:
         self.j = 2.5e-4  # Kgm^2 moment of inertia
 
     def u(self):
-        return [sum(self.input), self.l / 2 * (self.input[0] - self.input[1])]
+        return [sum(self.input), (self.l / 2) * (self.input[0] - self.input[1])]
 
     def reset(self):
         self.y = self.y0
@@ -40,7 +40,6 @@ class Quad2d:
         solution = scipy.integrate.solve_ivp(
             self.dynamics, t_span, self.y, method="RK45"
         )
-        print(solution.y[:, -1])
         return solution.y[:, -1]
 
     def update(self):
@@ -48,7 +47,6 @@ class Quad2d:
 
     def edges(self):
         x, y, theta, _, _, _ = self.y
-        print(self.y[0])
         x1 = x - self.l * math.cos(theta)
         y1 = y - self.l * math.sin(theta)
         x2 = x + self.l * math.cos(theta)
