@@ -1,5 +1,5 @@
 from gymnasium.envs.registration import register
-from .quadcopter import Quadcopter2d
+from .quadcopter import Quad2d
 
 register(
     id="QuadEnv-v0",

@@ -23,7 +23,7 @@ class QuadEnv(gym.Env):
             high=np.array([np.inf, np.inf, np.inf, np.inf, np.inf]),
             dtype=np.float64,
         )
-        self.quad = Quadcopter2d()
+        self.quad = Quad2d()
         self.render_mode = render_mode
         if render_mode == "human":
             self._init_render()
@@ -36,20 +36,20 @@ class QuadEnv(gym.Env):
         return (np.array(state, dtype=np.float64), info)
 
     def _get_obs_info(self):
-        vx, vy, acc_x, acc_y, acc_ang, _ = self.quad.get_agent_state()
+        vx, vy, acc_x, acc_y, acc_ang, _ = self.quad.dynamics(0, self.quad.y)
         reward = -math.sqrt(acc_x**2 + acc_y**2 + acc_ang**2) - math.sqrt(vx**2 + vy**2)
         return ([vx, vy, acc_x, acc_y, acc_ang], reward)
 
     def step(self, action):
-        direction = self.quad.current_action[action]
-        self.quad.set_input(direction)
+        f1, f2 = action
+        self.quad.set_input(f1, f2)
         self.quad.update()
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
 
         if self.render_mode == "human":
-            frame = int(self.quad.time_alive / self.renderer.dt)
+            frame = int(self.quad.t / self.renderer.dt)
             self.renderer.render(frame)
 
         return np.array(obs), reward, terminated, False, info
@@ -63,16 +63,15 @@ class QuadEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    from quadcopter import Quadcopter2d
-    from render import QuadRender
+    from env.quadcopter import Quad2d
+    from env.render import QuadRender
 
     def main():
         test_env = QuadEnv(render_mode="human")
         obs, info = test_env.reset()
         done = False
-        test_env.quad.human_input()
         while not done:
-            obs, reward, terminated, truncated, info = test_env.step(action=3)
+            obs, reward, terminated, truncated, info = test_env.step(action=(3, 5))
             done = terminated or truncated
         test_env.close()
 
@@ -80,6 +79,3 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("Program Interrupted")
-else:
-    from env.quadcopter import Quadcopter2d
-    from env.render import QuadRender

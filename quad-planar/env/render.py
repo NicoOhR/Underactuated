@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import time
+import math
 
 
 class QuadRender:
     def __init__(self, quad):
-        self.dt = 0.0001
+        self.dt = 0.001
         self.quad = quad
         self.initialize_plot()
 
@@ -14,8 +15,8 @@ class QuadRender:
         (self.quadcopter_body,) = self.ax.plot([], [], "o-", lw=2, label="Quadcopter")
         (self.trail,) = self.ax.plot([], [], "r--", lw=1, label="Trail")
         self.time_text = self.ax.text(0.02, 0.95, "", transform=self.ax.transAxes)
-        self.ax.set_xlim(0, 20)
-        self.ax.set_ylim(-200, 20)
+        self.ax.set_xlim(-2, 2)
+        self.ax.set_ylim(-2, 2)
         self.trajectory_x = []
         self.trajectory_y = []
         self.quadcopter_body.set_data([], [])
@@ -36,11 +37,12 @@ class QuadRender:
 
 
 if __name__ == "__main__":
-    from quadcopter import Quad2d
+    from env.quadcopter import Quad2d
 
     quad = Quad2d()
     quad_anim = QuadRender(quad)
     frame = 0
+    t = 0
     try:
         while True:
             quad.update()
@@ -51,5 +53,3 @@ if __name__ == "__main__":
         print("Animation stopped.")
         plt.ioff()
         plt.show()
-else:
-    from env.quadcopter import Quad2d
