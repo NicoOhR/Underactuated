@@ -32,19 +32,11 @@ class QuadEnv(gym.Env):
 
     def _get_obs_info(self):
         vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y)
-        reward_ = (
-            -math.sqrt(acc_x**2 + acc_y**2 + alpha**2)
-            - math.sqrt(vx**2 + vy**2)
-            + self.quad.t / 100
-        )
-        # x pos, y pos, theta, vx, vy, omega
         x, y, theta, vx, vy, omega = self.quad.y
-        reward = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
+        reward = max(0, 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2))
         if self.quad.crash():
             reward -= 1
         return ([vx, vy, omega, acc_x, acc_y, alpha], reward)
-        # x pos, y pos, theta, vx, vy, omega
-        x, y, theta, vx, vy, omega = self.quad.y
 
     def step(self, action):
         f1, f2 = action

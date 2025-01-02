@@ -68,9 +68,9 @@ def main_():
 
 def main():
     env = gym.make("QuadEnv-v0")
-    model = PPO("MlpPolicy", env, verbose=1)
+    model = PPO("MlpPolicy", env,device="cpu", verbose=1)
     model.learn(total_timesteps=300000)
-    model.save("ppo_quad")
+    model.save("ppo_quad_cpu")
     del model
 
 

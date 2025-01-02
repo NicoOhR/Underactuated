@@ -15,7 +15,7 @@ if env.action_space.shape:
 else:
     sys.exit(-1)
 
-model = PPO.load("ppo_quad")
+model = PPO.load("ppo_quad_cpu")
 
 done = False
 obs, info = env.reset()
@@ -23,3 +23,4 @@ while not done:
     action, _ = model.predict(obs)
     print(action)
     obs, reward, terminated, truncated, info = env.step(action)
+    done = terminated
