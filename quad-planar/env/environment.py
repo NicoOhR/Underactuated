@@ -46,6 +46,7 @@ class QuadEnv(gym.Env):
         info = {"reward": reward}
         terminated = self.quad.crash()
         if math.isclose(self.quad.t, 10.0):
+            print("truncated")
             truncated = True
         else:
             truncated = False
