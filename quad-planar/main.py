@@ -16,7 +16,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
 
-def main_bak():
+def main_():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
     total_episodes = int(100)
@@ -69,7 +69,7 @@ def main_bak():
 def main():
     env = gym.make("QuadEnv-v0")
     model = PPO("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=30000)
+    model.learn(total_timesteps=300000)
     model.save("ppo_quad")
     del model
 

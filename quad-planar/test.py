@@ -14,6 +14,7 @@ if env.action_space.shape:
     action_space_dims = env.action_space.shape[0]
 else:
     sys.exit(-1)
+
 model = PPO.load("ppo_quad")
 
 done = False

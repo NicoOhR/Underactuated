@@ -2,7 +2,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import gymnasium as gym
-from numpy._core.multiarray import dtype
 from env.quadcopter import Quad2d
 from env.render import QuadRender
 
@@ -33,8 +32,19 @@ class QuadEnv(gym.Env):
 
     def _get_obs_info(self):
         vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y)
-        reward = -math.sqrt(acc_x**2 + acc_y**2 + alpha**2) - math.sqrt(vx**2 + vy**2)
+        reward_ = (
+            -math.sqrt(acc_x**2 + acc_y**2 + alpha**2)
+            - math.sqrt(vx**2 + vy**2)
+            + self.quad.t / 100
+        )
+        # x pos, y pos, theta, vx, vy, omega
+        x, y, theta, vx, vy, omega = self.quad.y
+        reward = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
+        if self.quad.crash():
+            reward -= 1
         return ([vx, vy, omega, acc_x, acc_y, alpha], reward)
+        # x pos, y pos, theta, vx, vy, omega
+        x, y, theta, vx, vy, omega = self.quad.y
 
     def step(self, action):
         f1, f2 = action
@@ -43,12 +53,15 @@ class QuadEnv(gym.Env):
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
-
+        if math.isclose(self.quad.t, 10.0):
+            truncated = True
+        else:
+            truncated = False
         if self.render_mode == "human":
             frame = int(self.quad.t / self.renderer.dt)
             self.renderer.render(frame)
 
-        return np.array(obs), reward, terminated, False, info
+        return np.array(obs), reward, terminated, truncated, info
 
     def _init_render(self):
         self.renderer = QuadRender(self.quad)
