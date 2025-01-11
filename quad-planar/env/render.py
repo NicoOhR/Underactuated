@@ -15,8 +15,8 @@ class QuadRender:
         (self.quadcopter_body,) = self.ax.plot([], [], "o-", lw=2, label="Quadcopter")
         (self.trail,) = self.ax.plot([], [], "r--", lw=1, label="Trail")
         self.time_text = self.ax.text(0.02, 0.95, "", transform=self.ax.transAxes)
-        self.ax.set_xlim(-2, 2)
-        self.ax.set_ylim(-2, 2)
+        self.ax.set_xlim(0, 5)
+        self.ax.set_ylim(0, 5)
         self.trajectory_x = []
         self.trajectory_y = []
         self.quadcopter_body.set_data([], [])

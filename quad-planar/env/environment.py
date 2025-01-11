@@ -33,7 +33,7 @@ class QuadEnv(gym.Env):
     def _get_obs_info(self):
         vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y)
         x, y, theta, vx, vy, omega = self.quad.y
-        reward = max(0, 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2))
+        reward = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
         if self.quad.crash():
             reward -= 1
         return ([vx, vy, omega, acc_x, acc_y, alpha], reward)
