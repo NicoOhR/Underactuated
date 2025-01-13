@@ -36,7 +36,7 @@ class QuadEnv(gym.Env):
         reward = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
         if self.quad.crash():
             reward -= 1
-        return ([vx, vy, omega, acc_x, acc_y, alpha], reward)
+        return ([x, y, theta, vx, vy, omega], reward)
 
     def step(self, action):
         action = np.clip(action, 0, 1)
