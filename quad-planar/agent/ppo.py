@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.optim
 
 
 class network(nn.Module):
@@ -32,3 +33,21 @@ class network(nn.Module):
         critic_feedback = self.critic(features)
 
         return (mean, std, critic_feedback)
+
+
+class PPO:
+    def __init__(self, env, policy_class, **hyperparameters):
+        self.env = env
+        self.obs = env.observation_space.shape[0]
+        self.act = env.action_space.shape[0]
+
+        self.net = network()
+
+        params = [
+            {"params": self.net.policy.parameters()},
+            {"params": self.net.means.parameters()},
+            {"params": self.net.critic.parameters()},
+            {"params": [self.net.log_stds], "weight_decay": 0.0},
+        ]
+
+        self.actor_optim = torch.optim.AdamW(params, lr=1e-3, weight_decay=1e-2)
