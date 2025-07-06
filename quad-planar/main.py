@@ -16,7 +16,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
 
-def main_():
+def main_first_attempt():
     env = gym.make("QuadEnv-v0")
     wrapped = gym.wrappers.RecordEpisodeStatistics(env, 50)
     total_episodes = int(100)
@@ -55,18 +55,18 @@ def main_():
 
             reward_over_seeds.append(reward_over_episodes)
 
-    #     rewards_to_plot = reward_over_seeds
-    #     df1 = pd.DataFrame(rewards_to_plot).melt()
-    #     df1.rename(columns={"variable": "episodes", "value": "reward"}, inplace=True)
-    #     sns.set_theme(style="darkgrid", context="talk", palette="rainbow")
-    #     sns.lineplot(x="episodes", y="reward", data=df1).set(
-    #         title="REINFORCE for planar quadcopter"
-    #     )
-    #     plt.show()
+        rewards_to_plot = reward_over_seeds
+        df1 = pd.DataFrame(rewards_to_plot).melt()
+        df1.rename(columns={"variable": "episodes", "value": "reward"}, inplace=True)
+        sns.set_theme(style="darkgrid", context="talk", palette="rainbow")
+        sns.lineplot(x="episodes", y="reward", data=df1).set(
+            title="REINFORCE for planar quadcopter"
+        )
+        plt.show()
     return 0
 
 
-def main():
+def main_baseline():
     env = gym.make("QuadEnv-v0")
     model = PPO("MlpPolicy", env,device="cpu", verbose=1)
     model.learn(total_timesteps=int(2e6))
