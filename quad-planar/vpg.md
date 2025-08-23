@@ -12,3 +12,13 @@ with the advantage we weight the log gradient of the policy, giving us the gradi
 
 with the return calculated, we gradient descent with the mean squared error on the value function NN
 
+
+in implementation:
+*   the agent has an observation -> action function, and update function.
+*   The action function is repeated per episode, from $t_0$ to $t_T$. and the tuple of 
+        (State, Action, Reward, Value, Log_Prob(action)) 
+    is saved as an entry of batch.
+* For every entry in the batch, the update function will train the theta and phi networks, with the policy gradient estimation
+
+
+

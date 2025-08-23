@@ -36,7 +36,20 @@ class VPG:
     def __init__(self, env, policy): 
         self.env = env 
         self.net = network()
+
         self.policy_opt = torch.optim.AdamW(self.net.policy.parameters())
         self.value_opt = torch.optim.AdamW(self.net.value.parameters())
 
+    def action(self, obs):
+        """
+            returns the action given by the the theta network
+        """
+        dist, value = self.net.forward(obs)
+        action = dist.sample()
+        return action, value, dist.log_prob(action)
+        
+    def update(self, batch):
+        """
+            from the batch of rewards, compute one increment of the training loop
+        """
 
