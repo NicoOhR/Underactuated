@@ -42,7 +42,8 @@ class VPG:
 
     def action(self, obs):
         """
-            returns the action given by the the theta network
+            given an observation, returns the action given by the the theta network
+            as well as the rest of the agent supplied batch entry
         """
         dist, value = self.net.forward(obs)
         action = dist.sample()
@@ -50,6 +51,13 @@ class VPG:
         
     def update(self, batch):
         """
-            from the batch of rewards, compute one increment of the training loop
+            from the batch of rewards, compute one increment of the training loop. 
+            Batch is a tuple of lists of equal size representing the values at each
+            time step
         """
+        s, a, r, v, log_prob = batch #this might be better as a data class
+        r_to_go  = [sum(r[i:]) for i in range(1, len(r))] #undiscounted
+        advantage = [r_i - v_i for r_i, v_i  in zip(r_to_go, v)] #switch to GAE
 
+
+        
