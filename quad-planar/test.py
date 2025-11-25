@@ -1,6 +1,5 @@
 from env.render import QuadRender
 from stable_baselines3 import PPO
-from agent.networks import REINFORCE
 import gymnasium as gym
 import torch
 import sys
