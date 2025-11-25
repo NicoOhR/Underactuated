@@ -33,7 +33,8 @@ def main():
         rewards, actions, states = [], [], []
         state, _ = env.reset()
         while True:
-            action, value, log_probs = model.action(torch.tensor(state))
+            action, value, log_probs = model.action(torch.tensor(state).float())
+            print(action.shape)
             obs, reward, terminated, _, info = env.step(action)
             rewards.append(reward)
             states.append(obs)
@@ -42,7 +43,7 @@ def main():
 
             if terminated:
                 break
-        batch = np.array([(states, actions, rewards)])
+        batch = (states, actions, rewards)
         model.update(batch)
 
 

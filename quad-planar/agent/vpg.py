@@ -1,7 +1,8 @@
 import torch
-from torch.distributions import Normal
+from torch.distributions import MultivariateNormal
 import torch.nn as nn
 import torch.optim
+from torchviz import make_dot
 
 
 class network(nn.Module):
@@ -9,18 +10,21 @@ class network(nn.Module):
         super().__init__(*args, **kwargs)
 
         self.device = torch.device("cuda")
-        # theta: s in R5 -> a in [0,1]^2
+        # theta: s in R6 -> a in [0,1]^2
         self.policy = nn.Sequential(
-            nn.Linear(5, 126),
+            nn.Linear(6, 126),
             nn.ReLU(),
             nn.Linear(126, 126),
             nn.ReLU(),
             nn.Linear(126, 2),
         )
-        self.log_std = nn.Parameter(torch.ones((2, 1)) * torch.log(torch.tensor(0.75)))
-        # phi: s in R5 -> value in R
+        self.log_std = nn.Parameter(
+            torch.diag(torch.tensor([1, 1])) * torch.tensor(0.75)
+        )
+        print(f"cov: {self.log_std.shape}")
+        # phi: s in R6 -> value in R
         self.value = nn.Sequential(
-            nn.Linear(5, 126),
+            nn.Linear(6, 126),
             nn.ReLU(),
             nn.Linear(126, 126),
             nn.ReLU(),
@@ -29,7 +33,8 @@ class network(nn.Module):
 
     def forward(self, obs: torch.Tensor):
         mu = self.policy.forward(obs)
-        dist = Normal(mu, torch.exp(self.log_std))
+        print(f"means: {mu.shape}")
+        dist = MultivariateNormal(mu, torch.exp(self.log_std))
         v = self.value.forward(obs).squeeze()
         return (dist, v)
 
@@ -49,6 +54,7 @@ class VPG:
         """
         dist, value = self.net.forward(obs)
         action = dist.sample()
+        print(action)
         return action, value, dist.log_prob(action)
 
     def update(self, batch):
@@ -61,9 +67,11 @@ class VPG:
         value_loss = 0
         S_list, A_list, RTG_list = [], [], []
         for i in range(len(batch)):
-            s, a, r = batch[i]
+            s, a, r = batch
+            # print(type(a))
+            print(s)
             S_list.append(torch.as_tensor(s))
-            A_list.append(torch.as_tensor(a))
+            A_list.append(torch.stack(a))
             R = torch.as_tensor(r)
             rtg = torch.zeros_like(R)
             tot = 0.0
@@ -72,17 +80,18 @@ class VPG:
                 tot += R[t]
                 rtg[t] = tot
             RTG_list.append(rtg)
-        S_Batch = torch.cat(S_list, dim=0)
+        S_Batch = torch.cat(S_list, dim=0).float()
         A_Batch = torch.cat(A_list, dim=0)
         RTG_Batch = torch.cat(RTG_list, dim=0)
         dist, V = self.net(S_Batch)
 
         advantage = RTG_Batch - V
-        policy_loss = -(dist.log_prob(S_Batch) * advantage).mean()
+        print(dist.log_prob(A_Batch))
+        policy_loss = -(dist.log_prob(A_Batch) * advantage).mean()
         value_loss = (V - RTG_Batch).pow(2).mean()
 
         self.policy_opt.zero_grad()
-        policy_loss.backward()
+        policy_loss.backward(retain_graph=True)
         self.policy_opt.step()
 
         self.value_opt.zero_grad()
