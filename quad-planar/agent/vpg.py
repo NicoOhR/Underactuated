@@ -21,7 +21,7 @@ class network(nn.Module):
         self.log_std = nn.Parameter(
             torch.diag(torch.tensor([1, 1])) * torch.tensor(0.75)
         )
-        print(f"cov: {self.log_std.shape}")
+        # print(f"cov: {self.log_std.shape}")
         # phi: s in R6 -> value in R
         self.value = nn.Sequential(
             nn.Linear(6, 126),
@@ -33,7 +33,7 @@ class network(nn.Module):
 
     def forward(self, obs: torch.Tensor):
         mu = self.policy.forward(obs)
-        print(f"means: {mu.shape}")
+        # print(f"means: {mu.shape}")
         dist = MultivariateNormal(mu, torch.exp(self.log_std))
         v = self.value.forward(obs).squeeze()
         return (dist, v)
@@ -54,7 +54,7 @@ class VPG:
         """
         dist, value = self.net.forward(obs)
         action = dist.sample()
-        print(action)
+        # print(action)
         return action, value, dist.log_prob(action)
 
     def update(self, batch):
@@ -69,7 +69,7 @@ class VPG:
         for i in range(len(batch)):
             s, a, r = batch
             # print(type(a))
-            print(s)
+            # print(s)
             S_list.append(torch.as_tensor(s))
             A_list.append(torch.stack(a))
             R = torch.as_tensor(r)
@@ -86,7 +86,7 @@ class VPG:
         dist, V = self.net(S_Batch)
 
         advantage = RTG_Batch - V
-        print(dist.log_prob(A_Batch))
+        # print(dist.log_prob(A_Batch))
         policy_loss = -(dist.log_prob(A_Batch) * advantage).mean()
         value_loss = (V - RTG_Batch).pow(2).mean()
 

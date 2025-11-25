@@ -29,12 +29,11 @@ def main_baseline():
 def main():
     env = gym.make("QuadEnv-v0")
     model = vpg.VPG(env)
-    while True:
+    for i in tqdm(range(int(2e6))):
         rewards, actions, states = [], [], []
         state, _ = env.reset()
         while True:
             action, value, log_probs = model.action(torch.tensor(state).float())
-            print(action.shape)
             obs, reward, terminated, _, info = env.step(action)
             rewards.append(reward)
             states.append(obs)
@@ -43,8 +42,18 @@ def main():
 
             if terminated:
                 break
+        # single trajectory
         batch = (states, actions, rewards)
         model.update(batch)
+
+    state, _ = env.reset()
+
+    while True:
+        action, _, _ = model.action(torch.tensor(state).float())
+        obs, _, terminated, _, _ = env.step(action)
+        if terminated:
+            break
+        state = obs
 
 
 if __name__ == "__main__":
