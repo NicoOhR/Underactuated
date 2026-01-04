@@ -35,6 +35,7 @@ class QuadEnv(gym.Env):
         x, y, theta, vx, vy, omega = self.quad.y
         reward = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
         if self.quad.crash():
+            self.quad.t = 0
             reward -= 1
         return ([x, y, theta, vx, vy, omega], reward)
 
@@ -46,9 +47,9 @@ class QuadEnv(gym.Env):
         obs, reward = self._get_obs_info()
         info = {"reward": reward}
         terminated = self.quad.crash()
-        if math.isclose(self.quad.t, 1000.0):
+        if math.isclose(self.quad.t, 10.0):  #
             self.quad.t = 0
-            print("truncated")
+            # print("truncated")
             truncated = True
         else:
             truncated = False

@@ -37,7 +37,7 @@ class QuadRender:
 
 
 if __name__ == "__main__":
-    from env.quadcopter import Quad2d
+    from quadcopter import Quad2d
 
     quad = Quad2d()
     quad_anim = QuadRender(quad)

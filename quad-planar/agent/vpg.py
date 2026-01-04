@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from torch.distributions import MultivariateNormal
 import torch.nn as nn
 import torch.optim
@@ -18,9 +19,7 @@ class network(nn.Module):
             nn.ReLU(),
             nn.Linear(126, 2),
         )
-        self.log_std = nn.Parameter(
-            torch.diag(torch.tensor([1, 1])) * torch.tensor(0.75)
-        )
+        self.log_std = nn.Parameter(torch.full((2,), -2.3))
         # print(f"cov: {self.log_std.shape}")
         # phi: s in R6 -> value in R
         self.value = nn.Sequential(
@@ -33,9 +32,10 @@ class network(nn.Module):
 
     def forward(self, obs: torch.Tensor):
         mu = self.policy.forward(obs)
-        # print(f"means: {mu.shape}")
-        dist = MultivariateNormal(mu, torch.exp(self.log_std))
-        v = self.value.forward(obs).squeeze()
+        std = torch.exp(self.log_std)
+        cov = torch.diag(std * std)
+        dist = MultivariateNormal(mu, cov)
+        v = self.value(obs).squeeze(-1)
         return (dist, v)
 
 
@@ -44,7 +44,9 @@ class VPG:
         self.env = env
         self.net = network()
 
-        self.policy_opt = torch.optim.AdamW(self.net.policy.parameters())
+        self.policy_opt = torch.optim.AdamW(
+            list(self.net.policy.parameters()) + [self.net.log_std]
+        )
         self.value_opt = torch.optim.AdamW(self.net.value.parameters())
 
     def action(self, obs):
@@ -66,26 +68,25 @@ class VPG:
         policy_loss = torch.zeros
         value_loss = 0
         S_list, A_list, RTG_list = [], [], []
-        for i in range(len(batch)):
-            s, a, r = batch
-            # print(type(a))
-            # print(s)
-            S_list.append(torch.as_tensor(s))
-            A_list.append(torch.stack(a))
-            R = torch.as_tensor(r)
-            rtg = torch.zeros_like(R)
-            tot = 0.0
-            # add discount later
-            for t in range(R.shape[0]):
-                tot += R[t]
-                rtg[t] = tot
-            RTG_list.append(rtg)
+        s, a, r = batch
+        # print(type(a))
+        # print(s)
+        S_list.append(torch.as_tensor(np.array(s)))
+        A_list.append(torch.stack(a))
+        R = torch.as_tensor(r)
+        rtg = torch.zeros_like(R)
+        tot = 0.0
+        # add discount later
+        for t in reversed(range(R.shape[0])):
+            tot = R[t] + 0.75 * tot
+            rtg[t] = tot
+        RTG_list.append(rtg)
         S_Batch = torch.cat(S_list, dim=0).float()
         A_Batch = torch.cat(A_list, dim=0)
         RTG_Batch = torch.cat(RTG_list, dim=0)
         dist, V = self.net(S_Batch)
 
-        advantage = RTG_Batch - V
+        advantage = (RTG_Batch - V).detach()
         # print(dist.log_prob(A_Batch))
         policy_loss = -(dist.log_prob(A_Batch) * advantage).mean()
         value_loss = (V - RTG_Batch).pow(2).mean()
