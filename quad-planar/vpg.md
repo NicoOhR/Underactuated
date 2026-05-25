@@ -19,6 +19,3 @@ in implementation:
         (State, Action, Reward, Value, Log_Prob(action)) 
     is saved as an entry of batch.
 * For every entry in the batch, the update function will train the theta and phi networks, with the policy gradient estimation
-
-
-

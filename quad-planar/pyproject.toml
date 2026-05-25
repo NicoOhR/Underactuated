@@ -16,3 +16,8 @@ dependencies = [
     "torchviz>=0.0.3",
     "tqdm>=4.67.1",
 ]
+
+[tool.basedpyright]
+reportPrivateUsage = "none"
+reportPrivateImportUsage = "none"
+useLibraryCodeForTypes = true
