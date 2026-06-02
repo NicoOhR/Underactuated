@@ -35,11 +35,11 @@ class network(nn.Module):
         )
 
     def forward(self, obs: torch.Tensor) -> tuple[MultivariateNormal, torch.Tensor]:
-        mu: torch.Tensor = self.policy.forward(obs)
-        std: torch.Tensor = torch.exp(self.log_std)
-        cov: torch.Tensor = torch.diag(std * std)
+        mu: torch.Tensor = self.policy.forward(obs).cuda()
+        std: torch.Tensor = torch.exp(self.log_std).cuda()
+        cov: torch.Tensor = torch.diag(std * std).cuda()
         dist: MultivariateNormal = MultivariateNormal(mu, cov)
-        v: torch.Tensor = self.value(obs).squeeze(-1)
+        v: torch.Tensor = self.value(obs).squeeze(-1).cuda()
         return (dist, v)
 
 
@@ -50,7 +50,7 @@ class VPG:
 
     def __init__(self, env) -> None:
         self.env = env
-        self.net = network()
+        self.net = network().cuda()
 
         self.policy_opt = torch.optim.AdamW(
             list(self.net.policy.parameters()) + [self.net.log_std]
@@ -67,7 +67,7 @@ class VPG:
         dist: MultivariateNormal
         value: torch.Tensor
         dist, value = self.net.forward(obs)
-        action: torch.Tensor = dist.sample()
+        action: torch.Tensor = dist.sample().cuda()
         # print(action)
         return action, value, dist.log_prob(action)
 
@@ -79,9 +79,9 @@ class VPG:
         Batch is a tuple of lists of equal size representing the values at each
         time step
         """
-        S_list: list[torch.Tensor] = []
-        A_list: list[torch.Tensor] = []
-        RTG_list: list[torch.Tensor] = []
+        S_list: list[torch.Tensor.cuda()] = []
+        A_list: list[torch.Tensor.cuda()] = []
+        RTG_list: list[torch.Tensor.cuda()] = []
         s, a, r = batch
         S_list.append(torch.as_tensor(np.array(s)))
         A_list.append(torch.stack(a))
@@ -92,19 +92,19 @@ class VPG:
             tot = R[t] + 0.75 * tot
             rtg[t] = tot
         RTG_list.append(rtg)
-        S_Batch: torch.Tensor = torch.cat(S_list, dim=0).float()
-        A_Batch: torch.Tensor = torch.cat(A_list, dim=0)
-        RTG_Batch: torch.Tensor = torch.cat(RTG_list, dim=0)
+        S_Batch: torch.Tensor = torch.cat(S_list, dim=0).float().cuda()
+        A_Batch: torch.Tensor = torch.cat(A_list, dim=0).cuda()
+        RTG_Batch: torch.Tensor = torch.cat(RTG_list, dim=0).cuda()
         dist: MultivariateNormal
         V: torch.Tensor
         dist, V = self.net(S_Batch)
 
-        advantage: torch.Tensor = (RTG_Batch - V).detach()
+        advantage: torch.Tensor = (RTG_Batch - V).detach().cuda()
         policy_loss: torch.Tensor = -(dist.log_prob(A_Batch) * advantage).mean()
-        value_loss: torch.Tensor = (V - RTG_Batch).pow(2).mean()
+        value_loss: torch.Tensor = (V - RTG_Batch).pow(2).mean().cuda()
 
         self.policy_opt.zero_grad()
-        policy_loss.backward(retain_graph=True)
+        policy_loss.backward()
         self.policy_opt.step()
 
         self.value_opt.zero_grad()

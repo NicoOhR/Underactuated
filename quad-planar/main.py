@@ -34,8 +34,8 @@ def main():
         rewards, actions, states = [], [], []
         state, _ = env.reset()
         while True:
-            action, value, log_probs = model.action(torch.tensor(state).float())
-            obs, reward, terminated, truncated, info = env.step(action)
+            action, value, log_probs = model.action(torch.tensor(state).float().cuda())
+            obs, reward, terminated, truncated, info = env.step(action.cpu())
             rewards.append(reward)
             states.append(state)
             actions.append(action)

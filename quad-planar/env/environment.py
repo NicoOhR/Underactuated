@@ -45,7 +45,7 @@ class QuadEnv(gym.Env):
             self.quad.t = 0
             reward -= 1
         return ([x, y, theta, vx, vy, omega], reward)
-
+    #this can plausibly also happen in the GPU?
     def step(
         self, action: npt.NDArray[np.float64]
     ) -> tuple[npt.NDArray[np.float64], float, bool, bool, dict[str, float]]:
