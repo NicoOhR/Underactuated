@@ -3,6 +3,9 @@ from stable_baselines3.common import vec_env
 # from agent.networks import REINFORCE
 from agent import vpg
 from tqdm import tqdm
+import cProfile, pstats
+import os
+from torch.profiler import profile, ProfilerActivity, record_function
 from env.environment import QuadEnv
 from env.environment import QuadRender
 from env.quadcopter import Quad2d
@@ -30,7 +33,8 @@ def main():
     env = gym.make("QuadEnv-v0")
     model = vpg.VPG(env)
     episode_returns = []
-    for i in tqdm(range(int(5e5))):
+    steps = 10 if os.environ.get("PROFILE") == "TRUE" else 5e5
+    for i in tqdm(range(int(steps))):
         rewards, actions, states = [], [], []
         state, _ = env.reset()
         while True:
@@ -55,14 +59,17 @@ def main():
     state, _ = env.reset()
 
     while True:
-        action, _, _ = model.action(torch.tensor(state).float())
-        obs, _, terminated, _, _ = env.step(action)
+        action, _, _ = model.action(torch.tensor(state).float().to("cuda"))
+        obs, _, terminated, _, _ = env.step(action.cpu())
         if terminated:
             break
         state = obs
 
 
 if __name__ == "__main__":
+    if os.environ.get("PROFILE") == "TRUE":
+        cProfile.run("main()", "vpgstats")
+        sys.exit()
     setproctitle("training_process")
     try:
         main()

@@ -38,7 +38,7 @@ class QuadEnv(gym.Env):
         return (np.array(state, dtype=np.float64), info)
 
     def _get_obs_info(self) -> tuple[list[float], float]:
-        vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y)
+        vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y, None)
         x, y, theta, vx, vy, omega = self.quad.y
         reward: float = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
         if self.quad.crash():

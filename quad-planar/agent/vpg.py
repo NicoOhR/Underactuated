@@ -35,11 +35,11 @@ class network(nn.Module):
         )
 
     def forward(self, obs: torch.Tensor) -> tuple[MultivariateNormal, torch.Tensor]:
-        mu: torch.Tensor = self.policy.forward(obs).cuda()
-        std: torch.Tensor = torch.exp(self.log_std).cuda()
-        cov: torch.Tensor = torch.diag(std * std).cuda()
+        mu: torch.Tensor = self.policy.forward(obs)
+        std: torch.Tensor = torch.exp(self.log_std)
+        cov: torch.Tensor = torch.diag(std * std)
         dist: MultivariateNormal = MultivariateNormal(mu, cov)
-        v: torch.Tensor = self.value(obs).squeeze(-1).cuda()
+        v: torch.Tensor = self.value(obs).squeeze(-1)
         return (dist, v)
 
 
@@ -50,7 +50,7 @@ class VPG:
 
     def __init__(self, env) -> None:
         self.env = env
-        self.net = network().cuda()
+        self.net = network().to("cuda")
 
         self.policy_opt = torch.optim.AdamW(
             list(self.net.policy.parameters()) + [self.net.log_std]
@@ -79,9 +79,9 @@ class VPG:
         Batch is a tuple of lists of equal size representing the values at each
         time step
         """
-        S_list: list[torch.Tensor.cuda()] = []
-        A_list: list[torch.Tensor.cuda()] = []
-        RTG_list: list[torch.Tensor.cuda()] = []
+        S_list: list[torch.Tensor] = []
+        A_list: list[torch.Tensor] = []
+        RTG_list: list[torch.Tensor] = []
         s, a, r = batch
         S_list.append(torch.as_tensor(np.array(s)))
         A_list.append(torch.stack(a))
