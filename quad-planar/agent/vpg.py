@@ -22,10 +22,11 @@ class network(nn.Module):
             nn.Linear(126, 126),
             nn.ReLU(),
             nn.Linear(126, 126),
-            nn.Sigmoid(), 
-            nn.Linear(126, 2)
+            nn.ReLU(),
+            nn.Linear(126, 2),
+            nn.Sigmoid(),
         )
-        self.log_std = nn.Parameter(torch.full((2,), -10.0))
+        self.log_std = nn.Parameter(torch.full((2,), -1.0))
 
         # phi: s in R6 -> value in R
         self.value = nn.Sequential(

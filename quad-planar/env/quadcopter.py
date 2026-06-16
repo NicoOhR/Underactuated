@@ -1,11 +1,8 @@
 import scipy.constants
 import scipy.integrate
-from dataclasses import dataclass
 import math
 import numpy as np
 import numpy.typing as npt
-from diffrax import diffeqsolve, ODETerm, Tsit5
-import jax.numpy
 
 class Quad2d:
     t: float
@@ -45,24 +42,24 @@ class Quad2d:
     def reset(self) -> None:
         self.y = self.y0
 
-    def dynamics(self, t: float, y: list[float] | npt.NDArray[np.float64], args) -> list[float]:
+    def dynamics(self, t: float, y: npt.NDArray[np.float64]) -> list[float]:
         """
         given the current state y, and u1(t) and u2(t), return the second derivatives of state
         i.e. dy/dt
         """
+        u_total, u_torque = self.u()
         _, _, theta, vx, vy, omega = y
-        acc_x = -self.u()[0] * jax.numpy.sin(theta) * 1 / self.m
-        acc_y = -scipy.constants.g + (self.u()[0] * jax.numpy.cos(theta) * 1 / self.m)
-        alpha = self.u()[1] / self.j
+        acc_x = -u_total * np.sin(theta) / self.m
+        acc_y = -scipy.constants.g + (u_total * np.cos(theta) / self.m)
+        alpha = u_torque / self.j
         return [vx, vy, omega, acc_x, acc_y, alpha]
 
     def solve(self) -> npt.NDArray[np.float64]:
-        term = ODETerm(self.dynamics)
-        solver = Tsit5()
-        sol = diffeqsolve(term, solver, t0 = self.t, t1=self.t + self.dt, dt0 = 0.01, y0 = self.y)
+        sol = scipy.integrate.solve_ivp(
+            self.dynamics, [self.t, self.t + self.dt], self.y, max_step=0.01
+        )
         self.t += self.dt
-        y = jax.numpy.array(sol.ys).squeeze().tolist()
-        return y
+        return sol.y[:, -1].tolist()
 
     def update(self) -> None:
         self.y = self.solve()
