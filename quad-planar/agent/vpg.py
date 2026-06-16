@@ -21,13 +21,17 @@ class network(nn.Module):
             nn.ReLU(),
             nn.Linear(126, 126),
             nn.ReLU(),
-            nn.Linear(126, 2),
+            nn.Linear(126, 126),
+            nn.Sigmoid(), 
+            nn.Linear(126, 2)
         )
-        self.log_std = nn.Parameter(torch.full((2,), -2.3))
+        self.log_std = nn.Parameter(torch.full((2,), -10.0))
 
         # phi: s in R6 -> value in R
         self.value = nn.Sequential(
             nn.Linear(6, 126),
+            nn.ReLU(),
+            nn.Linear(126, 126),
             nn.ReLU(),
             nn.Linear(126, 126),
             nn.ReLU(),
@@ -89,7 +93,7 @@ class VPG:
         rtg: torch.Tensor = torch.zeros_like(R)
         tot: float = 0.0
         for t in reversed(range(R.shape[0])):
-            tot = R[t] + 0.75 * tot
+            tot = R[t] + 0.99 * tot
             rtg[t] = tot
         RTG_list.append(rtg)
         S_Batch: torch.Tensor = torch.cat(S_list, dim=0).float().cuda()

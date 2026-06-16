@@ -32,20 +32,19 @@ class QuadEnv(gym.Env):
 
     def reset(self, **kwargs) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
         super().reset(**kwargs)
+        self.quad.reset()
         state, reward = self._get_obs_info()
         info: dict[str, float] = {"reward": reward}
-        self.quad.reset()
         return (np.array(state, dtype=np.float64), info)
 
     def _get_obs_info(self) -> tuple[list[float], float]:
-        vx, vy, omega, acc_x, acc_y, alpha = self.quad.dynamics(0, self.quad.y, None)
         x, y, theta, vx, vy, omega = self.quad.y
         reward: float = 1 - math.sqrt((1 - x) ** 2 + (1 - y) ** 2)
         if self.quad.crash():
             self.quad.t = 0
             reward -= 1
         return ([x, y, theta, vx, vy, omega], reward)
-    #this can plausibly also happen in the GPU?
+
     def step(
         self, action: npt.NDArray[np.float64]
     ) -> tuple[npt.NDArray[np.float64], float, bool, bool, dict[str, float]]:
